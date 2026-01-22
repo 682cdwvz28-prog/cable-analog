@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск аналогов кабелей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f7f7f7;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 400px;
+            height: 200px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            background: #0078ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: white;
+        }
+
+        th {
+            background: #0078ff;
+            color: white;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        tr:nth-child(even) td {
+            background: #f0f6ff;
+        }
+
+        .cable-title {
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Введите названия кабелей (каждый с новой строки)</h2>
+
+<textarea id="input"></textarea><br><br>
+<button onclick="findAnalogs()">Найти аналоги</button>
+
+<h3>Результат:</h3>
+<div id="result"></div>
+
+<script>
+async function findAnalogs() {
+    const lines = document.getElementById("input").value.split("\n");
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    for (const cable of lines) {
+        if (!cable.trim()) continue;
+
+        const response = await fetch(`/api/analogs?name=${encodeURIComponent(cable)}`);
+        const data = await response.json();
+
+        // Заголовок кабеля
+        const title = document.createElement("h3");
+        title.className = "cable-title";
+        title.textContent = data.cable;
+        resultDiv.appendChild(title);
+
+        // Таблица
+        const table = document.createElement("table");
+
+        // Заголовок таблицы
+        const header = document.createElement("tr");
+        header.innerHTML = `
+            <th>Замена</th>
+            <th>Значение</th>
+        `;
+        table.appendChild(header);
+
+        // Строки таблицы
+        data.analogs.forEach((item, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item}</td>
+            `;
+            table.appendChild(row);
+        });
+
+        resultDiv.appendChild(table);
+    }
+}
+</script>
+
+</body>
+</html>
